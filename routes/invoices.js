@@ -9,10 +9,24 @@ router.get("/", async function(req, res, next) {
     return res.json({invoices: results.rows})
 })
 
+router.get("/:id", async function(req, res, next) {
+    try {
+       const results = await db.query(`SELECT * FROM invoices WHERE id=$1`, [req.params.id])
+
+        if (results.rows.length === 0) {
+        // If no invoice is found, return 404
+        return res.status(404).json({ error: "Invoice not found" });
+        }
+        // If invoice is found, return the result
+        return res.json({ invoice: results.rows[0] }); 
+    } catch(e) {
+        return next(e)
+    }
+})
 
 // **GET /invoices/[id] :** Returns obj on given invoice.
 // If invoice cannot be found, returns 404. Returns `{invoice: {id, amt, paid, add_date, paid_date, company: {code, name, description}}}`
-// const results = await db.query(`SELECT * FROM invoices WHERE comp_code=$1`, [req.params.code])
+
 // **POST /invoices :** Adds an invoice. Needs to be passed in JSON body of: `{comp_code, amt}`
 // Returns: `{invoice: {id, comp_code, amt, paid, add_date, paid_date}}`
 

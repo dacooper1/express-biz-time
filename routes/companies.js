@@ -52,6 +52,35 @@ router.post("/", async function (req, res, next) {
     }
 })
 
+// Edit existing company. Should return 404 if company cannot be found. Returns update company object: `{company: {code, name, description}}`
+router.put("/:code", async function (req, res, next) {
+    try {
+        const { name, description } = req.body;
+
+        // Ensure the required fields are provided
+        if (!name || !description) {
+            return res.status(400).json({ error: "Missing required fields: name, description" });
+        }
+
+        const results = await db.query(
+            `UPDATE companies SET name=$1, description=$2 WHERE code=$3 RETURNING *`,
+            [name, description, req.params.code]
+        );
+
+        // Handle case where the company is not found
+        if (results.rows.length === 0) {
+            return res.status(404).json({ error: "Company not found" });
+        }
+
+        return res.status(200).json({ company: results.rows[0] });
+    } catch (e) {
+        return next(e); // Pass any errors to error-handling middleware
+    }
+});
+
+
+
+
 
 
 module.exports = router;

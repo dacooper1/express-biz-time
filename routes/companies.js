@@ -13,7 +13,7 @@ router.delete("/:id", function(req, res) {
 });
 
 
-// **GET /companies :** Returns list of companies, like `{companies: [{code, name}, ...]}`
+// Returns list of companies
 
 router.get("/", async function(req, res, next) {
     try { 
@@ -24,8 +24,24 @@ router.get("/", async function(req, res, next) {
     }
   });
 
-// **GET /companies/[code] :** Return obj of company: `{company: {code, name, description}}`
-// If the company given cannot be found, this should return a 404 status response.
+// Returns obj of the company. If the company given cannot be found, returns a 404 status response.
+
+router.get("/:code", async function (req, res, next) {
+    try {
+      const results = await db.query(`SELECT * FROM companies WHERE code=$1`, [req.params.code]);
+  
+      if (results.rows.length === 0) {
+        // If no company is found, return 404
+        return res.status(404).json({ error: "Company not found" });
+      }
+      // If company is found, return the result
+      return res.json({ company: results.rows[0] });
+    } catch (e) {
+      return next(e); // Pass the error to the error-handling middleware
+    }
+  });
+  
+
 
 // **POST /companies :** Adds a company. Needs to be given JSON like: `{code, name, description}` Returns obj of new company:  `{company: {code, name, description}}`
 

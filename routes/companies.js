@@ -4,15 +4,6 @@ const db = require("../db")
 const users = [];
 
 
-/** DELETE /users/[id]: delete user, return status */
-
-router.delete("/:id", function(req, res) {
-  const idx = users.findIndex(u => u.id === +req.params.id);
-  users.splice(idx, 1);
-  return res.json({ message: "Deleted" });
-});
-
-
 // Returns list of companies
 router.get("/", async function(req, res, next) {
     try { 
@@ -36,7 +27,7 @@ router.get("/:code", async function (req, res, next) {
       // If company is found, return the result
       return res.json({ company: results.rows[0] });
     } catch (e) {
-      return next(e); // Pass the error to the error-handling middleware
+      return next(e); 
     }
   });
   
@@ -45,6 +36,11 @@ router.get("/:code", async function (req, res, next) {
 router.post("/", async function (req, res, next) {
     try { 
         const {code, name, description} = req.body 
+         // Ensure the required fields are provided
+         if (!code || !name || !description) {
+            return res.status(400).json({ error: "Missing required fields: code, name, description" });
+        }
+
         const results = await db.query(`INSERT INTO companies (code, name, description) VALUES ($1, $2, $3) RETURNING *`, [code, name, description])
         return res.status(201).json(results.rows[0]);
     } catch (e) {
@@ -52,7 +48,7 @@ router.post("/", async function (req, res, next) {
     }
 })
 
-// Edit existing company. Should return 404 if company cannot be found. Returns update company object: `{company: {code, name, description}}`
+// Edit existing company. Returns 404 if company cannot be found. Returns update company object: `{company: {code, name, description}}`
 router.put("/:code", async function (req, res, next) {
     try {
         const { name, description } = req.body;
@@ -74,14 +70,12 @@ router.put("/:code", async function (req, res, next) {
 
         return res.status(200).json({ company: results.rows[0] });
     } catch (e) {
-        return next(e); // Pass any errors to error-handling middleware
+        return next(e); 
     }
 });
 
 
-// **DELETE /companies/[code] :** Deletes company. Should return 404 if company cannot be found.
-// Returns `{status: "deleted"}`
-
+// Deletes company. Returns 404 if company cannot be found.Returns `{status: "deleted"}`
 router.delete("/:code", async function (req, res, next) {
     try {
         const result = await db.query(
@@ -100,7 +94,5 @@ router.delete("/:code", async function (req, res, next) {
         return next(e);
     }
 });
-
-
 
 module.exports = router;

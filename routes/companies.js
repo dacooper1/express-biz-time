@@ -79,7 +79,27 @@ router.put("/:code", async function (req, res, next) {
 });
 
 
+// **DELETE /companies/[code] :** Deletes company. Should return 404 if company cannot be found.
+// Returns `{status: "deleted"}`
 
+router.delete("/:code", async function (req, res, next) {
+    try {
+        const result = await db.query(
+            `DELETE FROM companies WHERE code=$1`,
+            [req.params.code]
+        );
+
+        // Check if the company exists
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Company not found" });
+        }
+
+        // Successful deletion
+        return res.status(200).json({ status: "deleted" });
+    } catch (e) {
+        return next(e);
+    }
+});
 
 
 

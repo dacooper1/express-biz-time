@@ -14,7 +14,6 @@ router.delete("/:id", function(req, res) {
 
 
 // Returns list of companies
-
 router.get("/", async function(req, res, next) {
     try { 
         const results = await db.query(`SELECT * FROM companies;`)
@@ -24,8 +23,8 @@ router.get("/", async function(req, res, next) {
     }
   });
 
-// Returns obj of the company. If the company given cannot be found, returns a 404 status response.
 
+// Returns obj of the company. If the company given cannot be found, returns a 404 status response.
 router.get("/:code", async function (req, res, next) {
     try {
       const results = await db.query(`SELECT * FROM companies WHERE code=$1`, [req.params.code]);
@@ -42,14 +41,17 @@ router.get("/:code", async function (req, res, next) {
   });
   
 
+// Adds a company. Returns obj of new company.
+router.post("/", async function (req, res, next) {
+    try { 
+        const {code, name, description} = req.body 
+        const results = await db.query(`INSERT INTO companies (code, name, description) VALUES ($1, $2, $3) RETURNING *`, [code, name, description])
+        return res.status(201).json(results.rows[0]);
+    } catch (e) {
+        return next(e)
+    }
+})
 
-// **POST /companies :** Adds a company. Needs to be given JSON like: `{code, name, description}` Returns obj of new company:  `{company: {code, name, description}}`
-
-// **PUT /companies/[code] :** Edit existing company. Should return 404 if company cannot be found.
-// Needs to be given JSON like: `{name, description}` Returns update company object: `{company: {code, name, description}}`
-
-// **DELETE /companies/[code] :** Deletes company. Should return 404 if company cannot be found.
-// Returns `{status: "deleted"}`
 
 
 module.exports = router;

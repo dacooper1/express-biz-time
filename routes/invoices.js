@@ -71,9 +71,26 @@ router.put("/:id", async function(req, res, next) {
     }
 })
 
+// **DELETE /invoices/[id] :** Deletes an invoice. If invoice cannot be found, returns a 404. Returns: `{status: "deleted"}` Also, one route from the previous part should be updated:
 
-// **DELETE /invoices/[id] :** Deletes an invoice.If invoice cannot be found, returns a 404. Returns: `{status: "deleted"}` Also, one route from the previous part should be updated:
+router.delete("/:id", async function(req, res, next) {
+    try {
+        const result = await db.query(
+            `DELETE FROM invoices WHERE id=$1 RETURNING *`,
+            [req.params.id]
+        );
 
-// **GET /companies/[code] :** Return obj of company: `{company: {code, name, description, invoices: [id, ...]}}` If the company given cannot be found, this should return a 404 status response.
+        // Check if the company exists
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Invoice not found" });
+        }
+
+        // Successful deletion
+        return res.status(200).json({ status: "deleted" });
+    } catch (e) {
+        return next(e);
+    }
+})
+
 
 module.exports = router;

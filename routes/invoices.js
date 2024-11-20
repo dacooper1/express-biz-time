@@ -4,11 +4,15 @@ const db = require("../db")
 
 
 // **GET /invoices :** Return info on invoices: like `{invoices: [{id, comp_code}, ...]}`
+router.get("/", async function(req, res, next) {
+    const results = await db.query(`SELECT * FROM invoices`)
+    return res.json({invoices: results.rows})
+})
 
 
 // **GET /invoices/[id] :** Returns obj on given invoice.
 // If invoice cannot be found, returns 404. Returns `{invoice: {id, amt, paid, add_date, paid_date, company: {code, name, description}}}`
-
+// const results = await db.query(`SELECT * FROM invoices WHERE comp_code=$1`, [req.params.code])
 // **POST /invoices :** Adds an invoice. Needs to be passed in JSON body of: `{comp_code, amt}`
 // Returns: `{invoice: {id, comp_code, amt, paid, add_date, paid_date}}`
 

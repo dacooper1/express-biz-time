@@ -9,6 +9,9 @@ router.get("/", async function(req, res, next) {
     return res.json({invoices: results.rows})
 })
 
+
+// **GET /invoices/[id] :** Returns obj on given invoice.
+// If invoice cannot be found, returns 404. Returns `{invoice: {id, amt, paid, add_date, paid_date, company: {code, name, description}}}`
 router.get("/:id", async function(req, res, next) {
     try {
        const results = await db.query(`SELECT * FROM invoices WHERE id=$1`, [req.params.id])
@@ -24,11 +27,28 @@ router.get("/:id", async function(req, res, next) {
     }
 })
 
-// **GET /invoices/[id] :** Returns obj on given invoice.
-// If invoice cannot be found, returns 404. Returns `{invoice: {id, amt, paid, add_date, paid_date, company: {code, name, description}}}`
-
 // **POST /invoices :** Adds an invoice. Needs to be passed in JSON body of: `{comp_code, amt}`
 // Returns: `{invoice: {id, comp_code, amt, paid, add_date, paid_date}}`
+router.post("/", async function(req, res, next) {
+    try {
+        const {comp_code, amt} = req.body;
+
+         // Ensure the required fields are provided
+         if (!comp_code|| !amt) {
+            return res.status(400).json({ error: "Missing required fields: comp_code, amt" });
+        }
+        
+        const results = await db.query(`INSERT INTO invoices (comp_code, amt) VALUES ($1, $2) RETURNING *`, [comp_code, amt]);
+        
+        return res.json({invoice : results.rows[0]})
+    } catch (e) {
+        return next(e)
+    }
+})
+
+
+
+
 
 // **PUT /invoices/[id] :** Updates an invoice. If invoice cannot be found, returns a 404.
 // Needs to be passed in a JSON body of `{amt}` Returns: `{invoice: {id, comp_code, amt, paid, add_date, paid_date}}`

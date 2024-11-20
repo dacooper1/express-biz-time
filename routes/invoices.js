@@ -3,15 +3,14 @@ const router = new express.Router();
 const db = require("../db")
 
 
-// **GET /invoices :** Return info on invoices: like `{invoices: [{id, comp_code}, ...]}`
+// Return info on invoices.
 router.get("/", async function(req, res, next) {
     const results = await db.query(`SELECT * FROM invoices`)
     return res.json({invoices: results.rows})
 })
 
 
-// **GET /invoices/[id] :** Returns obj on given invoice.
-// If invoice cannot be found, returns 404. Returns `{invoice: {id, amt, paid, add_date, paid_date, company: {code, name, description}}}`
+//Returns obj on given invoice.
 router.get("/:id", async function(req, res, next) {
     try {
        const results = await db.query(`SELECT * FROM invoices WHERE id=$1`, [req.params.id])
@@ -27,8 +26,8 @@ router.get("/:id", async function(req, res, next) {
     }
 })
 
-// **POST /invoices :** Adds an invoice. Needs to be passed in JSON body of: `{comp_code, amt}`
-// Returns: `{invoice: {id, comp_code, amt, paid, add_date, paid_date}}`
+
+//Adds an invoice. 
 router.post("/", async function(req, res, next) {
     try {
         const {comp_code, amt} = req.body;
@@ -47,8 +46,7 @@ router.post("/", async function(req, res, next) {
 })
 
 
-// **PUT /invoices/[id] :** Updates an invoice. If invoice cannot be found, returns a 404.
-// Needs to be passed in a JSON body of `{amt}` Returns: `{invoice: {id, comp_code, amt, paid, add_date, paid_date}}`
+// Updates an invoice. If invoice cannot be found, returns a 404.
 router.put("/:id", async function(req, res, next) {
     try {
         const {amt} = req.body
@@ -71,8 +69,8 @@ router.put("/:id", async function(req, res, next) {
     }
 })
 
-// **DELETE /invoices/[id] :** Deletes an invoice. If invoice cannot be found, returns a 404. Returns: `{status: "deleted"}` Also, one route from the previous part should be updated:
 
+// Deletes an invoice. If invoice cannot be found, returns a 404. Returns: `{status: "deleted"}` 
 router.delete("/:id", async function(req, res, next) {
     try {
         const result = await db.query(

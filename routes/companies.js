@@ -16,14 +16,24 @@ router.get("/", async function(req, res, next) {
 // Returns obj of the company. If the company given cannot be found, returns a 404 status response.
 router.get("/:code", async function (req, res, next) {
     try {
-      const results = await db.query(`SELECT * FROM companies WHERE code=$1`, [req.params.code]);
+
+        const results =  await db.query(`
+        SELECT c.code, c.name, c.description, i.industry
+        FROM companies AS c
+        LEFT JOIN industries_companies AS ic 
+        ON c.code = ic.comp_code 
+        LEFT JOIN industries AS i 
+        ON ic.ind_id = i.code 
+        WHERE c.code = $1`,  [req.params.code]);
   
       if (results.rows.length === 0) {
         // If no company is found, return 404
         return res.status(404).json({ error: "Company not found" });
       }
       // If company is found, return the result
-      return res.json({ company: results.rows[0] });
+      const {code, name, description} = results.rows[0]
+      const industries = results.rows.map(i => i.industry);
+      return res.json({ company: {code, name, description, industries}});
     } catch (e) {
       return next(e); 
     }

@@ -2,6 +2,7 @@ const express = require("express");
 const router = new express.Router();
 const db = require("../db")
 
+// View list if industries and associated company codes
 router.get("/", async function (req, res, next) {
     try {
         const results = await db.query(`
@@ -34,6 +35,26 @@ router.get("/", async function (req, res, next) {
         next(e); 
     }
 });
+
+
+// Create new industry
+router.post("/",  async function (req, res, next) {
+    try {
+        const {code, industry} = req.body;
+        // Ensure the required fields are provided
+        if (!code || !industry) {
+            return res.status(400).json({ error: "Missing required fields: code, industry" });
+        }
+        
+        const results = await db.query(`INSERT INTO industries (code, industry) VALUES ($1, $2) RETURNING code, industry`, [code, industry])
+
+        return res.json({industry: results.rows[0]})
+
+    } catch (e) {
+        next(e)
+        
+    }
+})
     
     
 
